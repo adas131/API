@@ -1,69 +1,82 @@
-# API
+## API
 
-## Serwer testowy
-API produkcyjne dostępne jest pod adresem https://api.inpay.pl
-Natomiast adres serwera testowego to: api.test-inpay.pl
-W ramach testowania usługi prosimy o posługiwanie się portfelami typu Testnet np.: Bitcoin Wallet Testnet.
+### Test Server
+Regular transactional API is located at https://api.inpay.pl
+Testnet Server is available at https://api.test-inpay.pl
 
-W celu zasilenia Portfela Testnet można wykorzystać serwisy:
+#### Testnet wallets
+If you're willing to uset Testnet coins with our Testnet server you should use appriopriate Wallet. We suggest using 
+- [Android Bitcoin Wallet Testnet](https://play.google.com/store/apps/details?id=de.schildbach.wallet_test&hl=en)
+- [Android Mycelium Testnet](https://play.google.com/store/apps/details?id=com.mycelium.testnetwallet&hl=en)
+- http://testnetwallet.com/wallet
+
+#### Testnet faucets
+If you need to topup testnet coins use the following faucets or google one:
 - http://tpfaucet.appspot.com/
 - http://faucet.xeno-genesis.com/
+- or just ask us for some testnet coins
 
-Przykładowa implementacja klienta PHP dostępna w repozytorium Github https://github.com/inpay/phplib-inpay
-Integracja z rozwiązaniami e-commerce wymaga jedynie wykorzystaniu metody /invoice/create. Służy ona do wygenerowania linku płatności na który należy przekierować płatnika. Dobrą praktyką jest również przekazanie jako parametr adresów, na które InPay będzie mógł wysłać powiadomienia (callback) z informacjami i statusach danej transakcji. Rozwiązanie z wykorzystaniem adresów powiadomień jest rozwiązaniem pasywnym. Alternatywnie status każdej płatności może sprawdzać za pomocą metody `/invoice/status`
+#### Testnet explorers
+You can monitor testnet transactions on the following sites:
+- https://www.blocktrail.com/tBTC
 
+#### Simple PHP app
 
-### Uwierzytelnianie
-W systemie InPay musi być założone aktywne konto. Z systemu InPay lub od administratorów należy pobrać:
+Following PHP class allows for API interaction:  [phplib InPay](https://github.com/inpay/phplib-inpay)
+
+To generate payment request just issue call to  `/invoice/create`. This method will generate payment URL which can be used to redirect customers to the payment gateway. It is also recommended to supply parameters with `callbackUrl`. This way you'll receive status POST form data notifications to your own service. Alternatively you can poll actively invoice status using `/invoice/status`
+
+### Authentication
+To be able to create payment requests you need to set up an account https://partner.inpay.pl and fetch your **API** keys
 
 Attribute | Meaning
 ------------ | -------------
 **apiKey** | Your public API key
 **secretApiKey** | Your secret API key used for message signing and verification. Do not share with anyone
 
-
 ### /invoice/create
-Metoda /invoice/create (http://api.test-inpay.pl/invoice/create). przyjmuje następujące argumenty POST (form-data):
+Method `/invoice/create` accepts following POST **form-data** arguments :
 
 Attribute | Meaning
 ------------ | -------------
-**apiKey** | string klucz API
-**amount** | float Kwota do zapłaty 123.25
-**currency** | string currency, aktualnie obsługiwane PLN, EUR, USD
-**optData** | string opcjonalny urlencode data key=value&key2=value2, zostaną dodane do powiadomienia o statusie transakcji **orderCode** | string opcjonalny identyfikator zamówienia
-**description** | string opcjonalny opis zamówienia
-**customerEmail** | string opcjonalny email
-**callbackUrl** | url opcjonalny URL na który mają być wysyłane powiadomienia callback
-successUrl** | url opcjonalny URL na który płatnik będzie kierowaniu po udanej transakcji
-**failUrl** | url opcjonalny URL na który zostanie przekierowany użytkownik jeśli płatność się nie uda
-**minConfirmations** | int opcjonalny minimalna liczba potwierdzeń sieci Bitcoin, wymaganych do zmiany statusu na confirmed. domyślna i minimalna wartość: 6
+**apiKey** | `string` your public API key
+**amount** | `float` amount in local currency `123.25`
+**currency** | `string` local currency name. Accepted values: `PLN`, `EUR`, `USD`
+**optData** | `string` optional urlencoded query string `key=value&key2=value2`, which will be added to a callback to your service
+**orderCode** | `string` optional client order id
+**description** | `string` optional description
+**customerEmail** | `string` optional email
+**callbackUrl** | url optional callback URL to your service which will receive payment status updates
+**successUrl** | url optional URL to redirect your client after succesful payment
+**failUrl** | url optional URL to redirect your client if payment fails for some reason
 
-Wartość zwracana:
-
-Attribute | Meaning
------------- | -------------
-**invoiceCode** | identyfikator faktury nadawany przez InPay
-**redirectUrl** | URL na który należy przekierować płatnika
-
-### Inicjowanie płatności
-Należy zainicjować przekierowanie na `redirectUrl`.
-
-Płatność kończy się przekierowaniem na succcessUrl `failUrl`. Adres `callbackUrl` (POST) :
+Returned **JSON** object
 
 Attribute | Meaning
 ------------ | -------------
-**orderCode** | identyfikator zamówienia
-**amount** | potwierdzona kwota do wypłaty na konto pomniejszona o prowizje
-**currency** | waluta wypłaty na konto
-**fee** | wysokość pobranej prowizji
-**invoiceCode** | identyfikator faktury w systemie
-**status** | status faktury
-**optData** | opcjonalne dane podane przy funkcji `/invoice/create`
+**invoiceCode** | invoice unique ID generated by InPay
+**redirectUrl** | you should redirect to this URL
 
-callbackUrl | posiada w nagłówku atrybut API-Hash. Jest to skrót SHA512 wygenerowany ze zmiennych wysyłanych za pomocą POST & sekretny klucz API.
+### Initiate payment
+Redirect user to `redirectUrl`.
 
-Sprawdzenie wartości powyższej zmiennej jest istotne, aby uniknąć ew. zagrożeń typu man-in-the-middle.
-Przykładowy kod sprawdzający `API-Hash`:
+After succesful payment user will be redirected to `succcessUrl` or `failUrl`. 
+
+A `callbackUrl` will receive (POST) status updates :
+
+Attribute | Meaning
+------------ | -------------
+**orderCode** | your previosly supplied order code 
+**amount** | amount in local currency
+**currency** | local currency
+**fee** | fee taken if applies
+**invoiceCode** | unique InPay invoice ID
+**status** | current payment status
+**optData** | additional query parameters given at `/invoice/create`
+
+`callbackUrl` has a header attribute called `API-Hash`. It is a **SHA512** hash of all above attirbutes combined with your `API private key`.
+
+Below a simple script that checks the signature of transmitted data signed by header attribute `API-Hash`:
 
 ```php
   function checkApiHash() {
@@ -76,70 +89,46 @@ Przykładowy kod sprawdzający `API-Hash`:
 ```
 
 ### /invoice/status
-Opcjonalnie w przypadku rozwiązań dedykowanych np. płatności na urządzeniach mobilnych lub innych nietypowych aplikacjach do wykorzystania jest również metoda `/invoice/status`, przyjmuje argument POST (form-data) invoiceCode. Wartość zwracana: (JSON object).
+
+Use this method if you're willing to poll invoice status yourself. Just POST (form-data) invoiceCode as a parameter. 
+
+Returned JSON object:
 
 Attribute | Meaning
 ------------ | -------------
-**open_date** | data utworzenia (2014-04-15 16:01:01)
-**close_date** | data zapłaty (2014-04-15 16:01:01)
-**expire_date** | data wygaśnięcia płatności (2014-04-15 16:01:01)
-**secondsFromOpenToExpire** | czas ważności płatności w sekundach (1200)
-**secondsToExpire** | pozostały czas ważności w sekundach (1142)
-**received_amount** | otrzymana kwota (1234567 Satoshi = 0.00000001 BTC)
-**received_currency** | kryptowaluta
-**in_amount** | oczekiwana kwota do wypłaty partnerowi * 100 (np. 1000 dla 10 PLN)
-**in_currency** | oczekiwana waluta kwoty wpłacanej partnerowi PLN, EUR, USD
-**expected_amount** | oczekiwana kwota w kryptowalucie(1234567)
-**expected_currency** | oczekiwana waluta wpłacanej kwoty satoshi
-**input_address** | adres w sieci Bitcoin aktualnej aktywnej płatności (mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7)
-**btcAmount** | kwota płatności wyrażona w BTC (0.01192708)
-**btcLink** | adres url zgodny z protokołem BIP 0021 (bitcoin:mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7?amount=0.01192708)
-**invoice_code** | Identyfikator faktury aktulanej płatności: (PURGAM4BQHN9J3L)
-**status** | status płatności
-**confirmations** | liczba potwierdzeń z sieci bitcoin
+**open_date** | invoice creation date (2014-04-15 16:01:01)
+**close_date** | invoice full payment date (2014-04-15 16:01:01)
+**expire_date** | invoice expiration date (2014-04-15 16:01:01)
+**secondsFromOpenToExpire** | expiration date in seconds (1200)
+**secondsToExpire** | expiration date in seconds left (1142)
+**received_amount** | received amount until now (1234567 Satoshi = 0.00000001 BTC)
+**received_currency** | cryptocurrency name (BTC)
+**in_amount** | requested amount in local currency * 100 (np. 1000 dla 10 PLN)
+**in_currency** | requested local currency name `PLN`, `EUR`, `USD`
+**expected_amount** | `integer` requested amount in cryptocurrency
+**expected_currency** | cryptocurrency denominator (satoshi)
+**input_address** | unique cryptocurrency input (payment) address (mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7)
+**btcAmount** | amount in floating point format, 5 decimal points (0.12345)
+**btcLink** | BIP 0021 url with intent, amount and description (bitcoin:mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7?amount=0.01192708)
+**invoice_code** | Unique invoice ID: (PURGAM4BQHN9J3L)
+**status** | current status - see below
+**confirmations** | current number of confirmations
 
-Aby pobrać aktualne źródło obrazu image/png kodu QR umożliwiający zapłatę należy wywołać url `/qr/invoice/{invoice_code}`
-gdzie `{invoice_code}` to identyfikator faktury. Należy pamiętać, że kod QR należy przeładować po wygasniętu aktualnej płatności przypisanej do faktury.
+### Payment QR codes
+You can also fetch payment QR code `image/png` using `/qr/invoice/{invoice_code}` GET request
+where `{invoice_code}` is a unique invoice code generated during `/invoice/create`
 
-### Statusy płatności
-
-Attribute | Meaning
------------- | -------------
-**new** | nowa płatność, oczekujemy na wpłatę
-**received** | płatność Bitcoin została odnotowana
-**confirmed** | otrzymano poprawną wpłatę, transakcja została zatwierdzona przez InPay
-**expired** | płatność wygasła
-**invalid** | zapłacono za małą kwotę
-**overpaid** | zapłacono za dużą kwotę
-**refund** | zwrócono środki płacącemu
-
-Funkcja zwróci następujące zmienne:
+### Payment statuses
 
 Attribute | Meaning
 ------------ | -------------
-**success** | informacja dot. tego czy wywołanie się powiodło, jeśli jest false, to znaczy że nastąpił błąd
-**payment_hash** | identyfikator płatności
-**open_date** | data utworzenia płatności
-**close_date** | data zamknięcia płatności
-**expire_date** | data wygaśnięcia płatności w przypadku braku wpłaty
-**received_amount** | otrzymane środki
-**received_currency** | otrzymana waluta
-**in_amount** | żądana kwota (przy czym jest to kwota * 100, czyli dla PLN w groszach)
-**in_currency** | żądana waluta
-**expected_amount** | oczekiwana kwota zapłaty w satoshi (najmniejsza podzielna część Bitcoin)
-**expected_currency** | oczekiwana waluta, obecnie zawsze satoshi
+**new** | waiting for payment
+**received** | payment registered and waiting for confirmation
+**confirmed** | payment confirmed by InPay
+**paid** | payment included in closed settlement and sent to your bank account
+**expired** | payment expired
+**invalid** | payment to low, waiting for missing amount
+**overpaid** | payment overpaid
+**refund** | payment refunded
 
-Płatność może przyjąć następujący status:
-
-Attribute | Meaning
------------- | -------------
-**new** | nowa płatność, oczekujemy na wpłatę
-**received** | płatność Bitcoin została odnotowana
-**confirmed** | otrzymano poprawną wpłatę, transakcja została zatwierdzona przez InPay
-**paid** | dana transakcja została rozliczona, środki wypłacone na rachunek bankowy partnera
-**expired** | płatność wygasła
-**invalid** | zapłacono za małą kwotę
-**overpaid** | zapłacono za dużą kwotę
-**refund** | zwrócono środki płacącemu
-
-Status należy sprawdzać do czasu uzyskania statusu `confirmed`
+If you're polling for /invoice/status, check until status  `confirmed`

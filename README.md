@@ -6,8 +6,8 @@ Natomiast adres serwera testowego to: api.test-inpay.pl
 W ramach testowania usługi prosimy o posługiwanie się portfelami typu Testnet np.: Bitcoin Wallet Testnet.
 
 W celu zasilenia Portfela Testnet można wykorzystać serwisy:
-faucet.xeno-genesis.com/
-http://www.royalforkblog.com/2014/12/09/testnet-faucet/
+- http://tpfaucet.appspot.com/
+- http://faucet.xeno-genesis.com/
 
 Przykładowa implementacja klienta PHP dostępna w repozytorium Github https://github.com/inpay/phplib-inpay
 Integracja z rozwiązaniami e-commerce wymaga jedynie wykorzystaniu metody /invoice/create. Służy ona do wygenerowania linku płatności na który należy przekierować płatnika. Dobrą praktyką jest również przekazanie jako parametr adresów, na które InPay będzie mógł wysłać powiadomienia (callback) z informacjami i statusach danej transakcji. Rozwiązanie z wykorzystaniem adresów powiadomień jest rozwiązaniem pasywnym. Alternatywnie status każdej płatności może sprawdzać za pomocą metody `/invoice/status`

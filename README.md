@@ -5,7 +5,7 @@ Regular transactional API is located at https://api.inpay.pl
 Testnet Server is available at https://api.test-inpay.pl
 
 #### Testnet wallets
-If you're willing to uset Testnet coins with our Testnet server you should use appriopriate Wallet. We suggest using 
+If you're willing to use Testnet coins with our Testnet server you should use appriopriate Wallet. We suggest using 
 - [Android Bitcoin Wallet Testnet](https://play.google.com/store/apps/details?id=de.schildbach.wallet_test&hl=en)
 - [Android Mycelium Testnet](https://play.google.com/store/apps/details?id=com.mycelium.testnetwallet&hl=en)
 - http://testnetwallet.com/wallet

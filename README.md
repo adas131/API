@@ -124,6 +124,7 @@ Attribute | Meaning
 ------------ | -------------
 **new** | waiting for payment
 **received** | payment registered and waiting for confirmation
+**suspected** | payment may take longer to confirm or may be rejected by the network, possible double spend
 **confirmed** | payment confirmed by InPay
 **paid** | payment included in closed settlement and sent to your bank account
 **expired** | payment expired

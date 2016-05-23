@@ -2,7 +2,7 @@
 
 ### Test Server
 Regular transactional API is located at https://api.inpay.pl
-Testnet Server is available at https://api.test-inpay.pl
+Testnet Server is available at https://apitest.inpay.pl
 
 #### Testnet wallets
 If you're willing to use Testnet coins with our Testnet server you should use appriopriate Wallet. We suggest using 

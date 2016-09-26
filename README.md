@@ -103,7 +103,7 @@ Attribute | Meaning
 **secondsToExpire** | expiration date in seconds left (1142)
 **received_amount** | `decimal` received BTC amount until now
 **received_currency** | cryptocurrency name (BTC)
-**in_amount** | requested amount in local currency * 100 (np. 1000 dla 10 PLN)
+**in_amount** | `decimal` requested amount in local currency (i.e. 12.34)
 **in_currency** | requested local currency name `PLN`, `EUR`, `USD`
 **expected_amount** | `decimal` requested amount in cryptocurrency
 **expected_currency** | cryptocurrency denominator (BTC)

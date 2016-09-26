@@ -101,12 +101,12 @@ Attribute | Meaning
 **expire_date** | invoice expiration date (2014-04-15 16:01:01)
 **secondsFromOpenToExpire** | expiration date in seconds (1200)
 **secondsToExpire** | expiration date in seconds left (1142)
-**received_amount** | received amount until now (1234567 Satoshi = 0.00000001 BTC)
+**received_amount** | `decimal` received BTC amount until now
 **received_currency** | cryptocurrency name (BTC)
 **in_amount** | requested amount in local currency * 100 (np. 1000 dla 10 PLN)
 **in_currency** | requested local currency name `PLN`, `EUR`, `USD`
-**expected_amount** | `integer` requested amount in cryptocurrency
-**expected_currency** | cryptocurrency denominator (satoshi)
+**expected_amount** | `decimal` requested amount in cryptocurrency
+**expected_currency** | cryptocurrency denominator (BTC)
 **input_address** | unique cryptocurrency input (payment) address (mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7)
 **btcAmount** | amount in floating point format, 5 decimal points (0.12345)
 **btcLink** | BIP 0021 url with intent, amount and description (bitcoin:mwTNRX6A1E9TNH9JcLqt9eVhJo6zeDsYs7?amount=0.01192708)
